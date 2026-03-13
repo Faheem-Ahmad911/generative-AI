@@ -1,0 +1,1 @@
+TF-IDF stands for term frequency inverse document frequency. It rewards terms frequent in a document but rare in the corpus. TF-IDF vectors improve search ranking quality significantly.

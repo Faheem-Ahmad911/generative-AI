@@ -1,0 +1,1 @@
+Information retrieval systems index documents for fast search. Inverted index stores term to document mappings efficiently. Cosine similarity is used to rank documents by relevance.

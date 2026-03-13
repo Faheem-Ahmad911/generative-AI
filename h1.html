@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upwork Reviews</title>
+
+  <!-- =====================================================
+       FONT: Inter (Google Fonts)
+       ===================================================== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =====================================================
+       BASE RESET
+       ===================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f8fa;
+      color: #222;
+    }
+
+    /* =====================================================
+       SECTION WRAPPER
+       Drop this entire <section> into your homepage.
+       ===================================================== */
+    .reviews-section {
+      width: 100%;
+      padding: 80px 24px 90px;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    /* ---- Section heading ---- */
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #14a800;           /* Upwork green */
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      color: #0d0d0d;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .section-sub {
+      font-size: 16px;
+      font-weight: 400;
+      color: #6b7280;
+      max-width: 480px;
+      margin: 0 auto 56px;
+      line-height: 1.6;
+    }
+
+    /* =====================================================
+       SLIDER SHELL
+       ===================================================== */
+    .slider-outer {
+      position: relative;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+
+    /* soft fade masks on left/right edges */
+    .slider-outer::before,
+    .slider-outer::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 60px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .slider-outer::before { left:  0; background: linear-gradient(to right, #fff, transparent); }
+    .slider-outer::after  { right: 0; background: linear-gradient(to left,  #fff, transparent); }
+
+    .slider-viewport { overflow: hidden; }
+
+    /* =====================================================
+       SLIDER TRACK  — all cards in one horizontal row
+       JS translates this to show the active set of cards.
+       ===================================================== */
+    .slider-track {
+      display: flex;
+      gap: 20px;
+      padding: 16px 6px 28px;
+      transition: transform 0.5s cubic-bezier(0.77, 0, 0.18, 1);
+      will-change: transform;
+    }
+
+    /* =====================================================
+       REVIEW CARD  — styled to match Upwork's layout
+       ===================================================== */
+    .review-card {
+      /* How many cards to show:
+           Desktop  → 3 cards  (--sv = 3)
+           Tablet   → 2 cards  (--sv = 2)
+           Mobile   → 1 card   (--sv = 1)
+         JS sets --sv on resize. */
+      flex: 0 0 calc(100% / var(--sv, 3) - 14px);
+      background: #ffffff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 28px 26px 24px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: box-shadow 0.25s, border-color 0.25s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .review-card:hover {
+      box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+      border-color: #c8e6c3;
+    }
+
+    /* ---- Client name (green, like Upwork) ---- */
+    .card-client-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #14a800;           /* Upwork brand green */
+      line-height: 1;
+    }
+
+    /* ---- Stars + rating + date row ---- */
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stars {
+      display: flex;
+      gap: 2px;
+    }
+    /* Individual star — filled amber like Upwork */
+    .stars .star {
+      width: 16px;
+      height: 16px;
+    }
+    .stars .star path { fill: #f2a003; }
+
+    .card-rating {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0d0d0d;
+    }
+
+    .meta-sep {
+      width: 1px;
+      height: 14px;
+      background: #d1d5db;
+      flex-shrink: 0;
+    }
+
+    .card-date {
+      font-size: 13px;
+      font-weight: 400;
+      color: #6b7280;
+    }
+
+    /* ---- Review quote (italic, like Upwork) ---- */
+    .card-quote {
+      font-size: 14.5px;
+      font-style: italic;
+      font-weight: 400;
+      color: #374151;
+      line-height: 1.65;
+      flex: 1;
+    }
+
+    /* ---- Skill tag pills ---- */
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .tag {
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 4px 14px;
+    }
+
+    /* ---- Upwork badge (bottom right) ---- */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+      margin-top: auto;
+    }
+    .upwork-logo {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+    }
+    .upwork-logo svg { width: 18px; height: 18px; }
+    .upwork-logo span {
+      font-size: 12px;
+      font-weight: 600;
+      color: #14a800;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* =====================================================
+       NAVIGATION ARROWS
+       ===================================================== */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1.5px solid #e5e7eb;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.09);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      outline: none;
+    }
+    .nav-btn:hover { background: #14a800; border-color: #14a800; }
+    .nav-btn:hover svg polyline { stroke: #fff; }
+    .nav-btn:active { transform: translateY(-50%) scale(0.93); }
+    .nav-btn.prev { left: -23px; }
+    .nav-btn.next { right: -23px; }
+    .nav-btn svg { width: 20px; height: 20px; }
+    .nav-btn svg polyline { stroke: #374151; stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+    .nav-btn:disabled { opacity: 0.3; pointer-events: none; }
+
+    /* =====================================================
+       DOT INDICATORS
+       ===================================================== */
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 38px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #d1d5db;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.3s, width 0.3s, border-radius 0.3s;
+    }
+    .dot.active { background: #14a800; width: 26px; border-radius: 4px; }
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+    @media (max-width: 900px) {
+      .nav-btn.prev { left: -14px; }
+      .nav-btn.next { right: -14px; }
+    }
+    @media (max-width: 640px) {
+      .reviews-section { padding: 56px 16px 64px; }
+      .review-card { padding: 20px 18px; }
+      .nav-btn { width: 38px; height: 38px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- =====================================================
+     ★  REVIEWS SECTION — paste into your homepage  ★
+     ===================================================== -->
+<section class="reviews-section" id="reviews">
+
+  <p class="section-label">Client Reviews</p>
+  <h2 class="section-title">What My Upwork Clients Say</h2>
+  <p class="section-sub">6 completed contracts · 5.0 average rating · 100% Job Success</p>
+
+  <div class="slider-outer">
+
+    <!-- Prev Arrow -->
+    <button class="nav-btn prev" id="prevBtn" aria-label="Previous">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <div class="slider-viewport">
+      <div class="slider-track" id="track">
+
+        <!-- =================================================
+             REVIEW CARD 1
+             -------------------------------------------------
+             HOW TO CUSTOMISE:
+               • card-client-name  → client/company name
+               • card-date         → contract date range
+               • card-quote        → the review text
+               • .tag              → skill tags (add/remove)
+             ================================================= -->
+        <div class="review-card">
+          <p class="card-client-name">One2Note</p>
+
+          <div class="card-meta">
+            <!-- 5 filled stars -->
+            <div class="stars">
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+            </div>
+            <span class="card-rating">5.0</span>
+            <div class="meta-sep"></div>
+            <span class="card-date">Apr 11, 2024 – Jun 30, 2024</span>
+          </div>
+
+          <p class="card-quote">"It was a pleasure to work with Fawad, very proffesional. Next time i will hire Fawad again!"</p>
+
+          <div class="card-tags">
+            <span class="tag">Collaborative</span>
+            <span class="tag">Professional</span>
+          </div>
+
+          <div class="card-footer">
+            <div class="upwork-logo">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.5 5.5C16.6 5.5 14.8 6.3 13.5 7.6C13.1 5.8 12.2 4.2 10.9 3H7V13.1C7 14.9 5.5 16.4 3.7 16.4H3V19.9H3.7C7.5 19.9 10.6 16.8 10.6 13V10.4C11.3 11.1 11.8 12 11.9 13.1L13.2 18.5H16.8L15.1 11.6C15.5 11.8 16 11.9 16.5 11.9C18.9 11.9 21 9.8 21 7.4C21 6.3 20.2 5.5 19.1 5.5H18.5Z" fill="#14a800"/>
+              </svg>
+              <span>Upwork</span>
+            </div>
+          </div>
+        </div>
+        <!-- END CARD 1 -->
+
+
+        <!-- =================================================
+             REVIEW CARD 2
+             Replace the text values below with your 2nd review
+             ================================================= -->
+        <div class="review-card">
+          <p class="card-client-name">One2Note website</p>  <!-- ← replace -->
+
+          <div class="card-meta">
+            <div class="stars">
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+            </div>
+            <span class="card-rating">5.0</span>
+            <div class="meta-sep"></div>
+            <span class="card-date">Jun 5, 2024 – Jun 13, 2024</span>  <!-- ← replace -->
+          </div>
+
+          <p class="card-quote">"I will hire Fawad again when i have an project"</p>  <!-- ← replace -->
+
+          <div class="card-tags">
+  
+          </div>
+
+          <div class="card-footer">
+            <div class="upwork-logo">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M18.5 5.5C16.6 5.5 14.8 6.3 13.5 7.6C13.1 5.8 12.2 4.2 10.9 3H7V13.1C7 14.9 5.5 16.4 3.7 16.4H3V19.9H3.7C7.5 19.9 10.6 16.8 10.6 13V10.4C11.3 11.1 11.8 12 11.9 13.1L13.2 18.5H16.8L15.1 11.6C15.5 11.8 16 11.9 16.5 11.9C18.9 11.9 21 9.8 21 7.4C21 6.3 20.2 5.5 19.1 5.5H18.5Z" fill="#14a800"/></svg>
+              <span>Upwork</span>
+            </div>
+          </div>
+        </div>
+        <!-- END CARD 2 -->
+
+
+        <!-- =================================================
+             REVIEW CARD 3
+             ================================================= -->
+        <div class="review-card">
+          <p class="card-client-name">One2Note website</p>
+
+          <div class="card-meta">
+            <div class="stars">
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+            </div>
+            <span class="card-rating">5.0</span>
+            <div class="meta-sep"></div>
+            <span class="card-date">Apr 26, 2024 – May 15, 2024</span>
+          </div>
+
+          <p class="card-quote">"Fawad is a pleasure to work with, did a good job in short time. Communication with Fawad is perfect! I will absolutely hire Fawad in the future again."</p>
+
+          <div class="card-tags">
+            <span class="tag">Collaborative</span>
+            <span class="tag">Clear Communicator</span>
+          </div>
+
+          <div class="card-footer">
+            <div class="upwork-logo">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M18.5 5.5C16.6 5.5 14.8 6.3 13.5 7.6C13.1 5.8 12.2 4.2 10.9 3H7V13.1C7 14.9 5.5 16.4 3.7 16.4H3V19.9H3.7C7.5 19.9 10.6 16.8 10.6 13V10.4C11.3 11.1 11.8 12 11.9 13.1L13.2 18.5H16.8L15.1 11.6C15.5 11.8 16 11.9 16.5 11.9C18.9 11.9 21 9.8 21 7.4C21 6.3 20.2 5.5 19.1 5.5H18.5Z" fill="#14a800"/></svg>
+              <span>Upwork</span>
+            </div>
+          </div>
+        </div>
+        <!-- END CARD 3 -->
+
+
+        <!-- =================================================
+             REVIEW CARD 4
+             ================================================= -->
+        <div class="review-card">
+          <p class="card-client-name">Patrick M. (Verified)</p>
+
+          <div class="card-meta">
+            <div class="stars">
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+            </div>
+            <span class="card-rating">5.0</span>
+            <div class="meta-sep"></div>
+            <span class="card-date">Jul 2024</span>
+          </div>
+
+          <p class="card-quote">"I hired Fawad to help us with our compagny's rebranding effort. They were reliable, flexibel, and very responsive, It was a pleasure to work with Fawad and i highly recommend Fawad!"</p>
+
+          <div class="card-tags">
+            
+          </div>
+
+          <div class="card-footer">
+            <div class="upwork-logo">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M18.5 5.5C16.6 5.5 14.8 6.3 13.5 7.6C13.1 5.8 12.2 4.2 10.9 3H7V13.1C7 14.9 5.5 16.4 3.7 16.4H3V19.9H3.7C7.5 19.9 10.6 16.8 10.6 13V10.4C11.3 11.1 11.8 12 11.9 13.1L13.2 18.5H16.8L15.1 11.6C15.5 11.8 16 11.9 16.5 11.9C18.9 11.9 21 9.8 21 7.4C21 6.3 20.2 5.5 19.1 5.5H18.5Z" fill="#14a800"/></svg>
+              <span>Upwork</span>
+            </div>
+          </div>
+        </div>
+        <!-- END CARD 4 -->
+
+
+        <!-- =================================================
+             REVIEW CARD 5
+             ================================================= -->
+        <div class="review-card">
+          <p class="card-client-name">Branding & Strategy</p>
+
+          <div class="card-meta">
+            <div class="stars">
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+            </div>
+            <span class="card-rating">5.0</span>
+            <div class="meta-sep"></div>
+            <span class="card-date">Nov 27, 2025 – Present (Review dated Mar 1, 2026)</span>
+          </div>
+
+          <p class="card-quote">"I hired Fawad through Upwork and it’s been one of the best decisions for my business. He’s helped me truly understand what’s needed to brand my company properly — from strategy to messaging — and makes everything feel clear and manageable. He explains things simply, is incredibly easy to talk to, and always goes above and beyond. I’m beyond grateful for his support over the past few months and would highly recommend him."</p>
+
+          <div class="card-tags">
+
+          </div>
+
+          <div class="card-footer">
+            <div class="upwork-logo">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M18.5 5.5C16.6 5.5 14.8 6.3 13.5 7.6C13.1 5.8 12.2 4.2 10.9 3H7V13.1C7 14.9 5.5 16.4 3.7 16.4H3V19.9H3.7C7.5 19.9 10.6 16.8 10.6 13V10.4C11.3 11.1 11.8 12 11.9 13.1L13.2 18.5H16.8L15.1 11.6C15.5 11.8 16 11.9 16.5 11.9C18.9 11.9 21 9.8 21 7.4C21 6.3 20.2 5.5 19.1 5.5H18.5Z" fill="#14a800"/></svg>
+              <span>Upwork</span>
+            </div>
+          </div>
+        </div>
+        <!-- END CARD 5 -->
+
+
+        <!-- =================================================
+             REVIEW CARD 6
+             ================================================= -->
+        <div class="review-card">
+          <p class="card-client-name">App Marketing</p>
+
+          <div class="card-meta">
+            <div class="stars">
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+              <svg class="star" viewBox="0 0 16 16"><path d="M8 1l1.85 3.75 4.14.6-3 2.92.71 4.13L8 10.35l-3.7 1.95.71-4.13-3-2.92 4.14-.6z"/></svg>
+            </div>
+            <span class="card-rating">5.0</span>
+            <div class="meta-sep"></div>
+            <span class="card-date">Oct 14, 2024 – Mar 10, 2025</span>
+          </div>
+
+          <p class="card-quote">"I hire Fawad a several times, and the next time i will hire Fawad again. Very proffesional and very Active! Good Job!!"</p>
+
+          <div class="card-tags">
+            <span class="tag">Professional</span>
+         
+          </div>
+
+          <div class="card-footer">
+            <div class="upwork-logo">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M18.5 5.5C16.6 5.5 14.8 6.3 13.5 7.6C13.1 5.8 12.2 4.2 10.9 3H7V13.1C7 14.9 5.5 16.4 3.7 16.4H3V19.9H3.7C7.5 19.9 10.6 16.8 10.6 13V10.4C11.3 11.1 11.8 12 11.9 13.1L13.2 18.5H16.8L15.1 11.6C15.5 11.8 16 11.9 16.5 11.9C18.9 11.9 21 9.8 21 7.4C21 6.3 20.2 5.5 19.1 5.5H18.5Z" fill="#14a800"/></svg>
+              <span>Upwork</span>
+            </div>
+          </div>
+        </div>
+        <!-- END CARD 6 -->
+
+
+        <!-- =================================================
+             ➕ TO ADD MORE REVIEWS:
+             Copy any card block from above and paste here.
+             Change the client name, date, quote, and tags.
+             ================================================= -->
+
+      </div><!-- END .slider-track -->
+    </div><!-- END .slider-viewport -->
+
+    <!-- Next Arrow -->
+    <button class="nav-btn next" id="nextBtn" aria-label="Next">
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+  </div><!-- END .slider-outer -->
+
+  <!-- Dot pagination -->
+  <div class="dots" id="dots"></div>
+
+</section>
+<!-- END REVIEWS SECTION -->
+
+
+<script>
+  /* =====================================================
+     SLIDER ENGINE — no external library needed
+     ===================================================== */
+
+  const track   = document.getElementById('track');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const dotsEl  = document.getElementById('dots');
+
+  const cards      = Array.from(track.querySelectorAll('.review-card'));
+  const TOTAL      = cards.length;
+  let   current    = 0;   /* index of first visible card */
+  let   visible    = 3;   /* cards shown at once — updated on resize */
+  let   timer      = null;
+
+  /* How many cards to show per breakpoint */
+  function calcVisible() {
+    if (window.innerWidth < 640) return 1;
+    if (window.innerWidth < 960) return 2;
+    return 3;
+  }
+
+  /* Set CSS variable so flex-basis calc() works */
+  function applyVisible(v) {
+    cards.forEach(c => c.style.setProperty('--sv', v));
+  }
+
+  /* Build dot buttons */
+  function buildDots() {
+    dotsEl.innerHTML = '';
+    const pages = Math.ceil(TOTAL / visible);
+    for (let i = 0; i < pages; i++) {
+      const b = document.createElement('button');
+      b.className = 'dot';
+      b.setAttribute('aria-label', 'Page ' + (i + 1));
+      b.onclick = () => { resetTimer(); goTo(i * visible); };
+      dotsEl.appendChild(b);
+    }
+    syncDots();
+  }
+
+  function syncDots() {
+    const page = Math.floor(current / visible);
+    dotsEl.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === page);
+    });
+  }
+
+  /* Move slider to show card at index `idx` */
+  function goTo(idx) {
+    const max = TOTAL - visible;
+    current   = Math.max(0, Math.min(idx, max));
+
+    /* card width + gap (20px in CSS) */
+    const cardW = cards[0].offsetWidth + 20;
+    track.style.transform = `translateX(-${current * cardW}px)`;
+
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current >= max;
+
+    syncDots();
+  }
+
+  /* Auto-advance every 4 seconds */
+  function startTimer() {
+    timer = setInterval(() => {
+      goTo(current >= TOTAL - visible ? 0 : current + 1);
+    }, 4000); /* ← change ms to adjust speed */
+  }
+  function stopTimer()  { clearInterval(timer); }
+  function resetTimer() { stopTimer(); startTimer(); }
+
+  /* Pause on hover */
+  track.addEventListener('mouseenter', stopTimer);
+  track.addEventListener('mouseleave', startTimer);
+
+  /* Arrow buttons */
+  prevBtn.addEventListener('click', () => { resetTimer(); goTo(current - visible); });
+  nextBtn.addEventListener('click', () => { resetTimer(); goTo(current + visible); });
+
+  /* Keyboard */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft')  { resetTimer(); goTo(current - 1); }
+    if (e.key === 'ArrowRight') { resetTimer(); goTo(current + 1); }
+  });
+
+  /* Touch swipe */
+  let tx = 0;
+  track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend',   e => {
+    const d = tx - e.changedTouches[0].clientX;
+    if (Math.abs(d) > 50) { resetTimer(); d > 0 ? goTo(current + 1) : goTo(current - 1); }
+  });
+
+  /* Init + resize */
+  function init() {
+    visible = calcVisible();
+    applyVisible(visible);
+    buildDots();
+    goTo(current);
+  }
+
+  let resizeId;
+  window.addEventListener('resize', () => {
+    stopTimer();
+    clearTimeout(resizeId);
+    resizeId = setTimeout(() => { init(); startTimer(); }, 120);
+  });
+
+  init();
+  startTimer();
+</script>
+
+</body>
+</html>

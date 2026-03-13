@@ -1,0 +1,14 @@
+# For directory crawling and file path management
+# (Built-in libraries, no install needed: os, pathlib)
+
+# For advanced text cleaning and stopword removal
+nltk
+
+# For calculating Log-IDF and Vector Norms
+# (Built-in library, no install needed: math)
+
+# For saving/loading the index to disk
+# (Built-in library, no install needed: pickle)
+
+# For regular expressions and tokenization
+# (Built-in library, no install needed: re)

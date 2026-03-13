@@ -1,0 +1,1 @@
+Vector space model represents documents as numerical vectors. TF-IDF is a popular weighting scheme in information retrieval. Cosine similarity measures relevance between document and query.

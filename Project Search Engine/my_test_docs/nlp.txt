@@ -1,0 +1,1 @@
+Natural language processing NLP is a field of artificial intelligence. NLP techniques include tokenization stemming and lemmatization. Text classification is a common NLP task.

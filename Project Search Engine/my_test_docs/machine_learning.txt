@@ -1,0 +1,1 @@
+Machine learning algorithms learn patterns from data automatically. Supervised learning uses labeled data for training models. Neural networks are powerful machine learning models.

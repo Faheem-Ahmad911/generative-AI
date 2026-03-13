@@ -1,0 +1,1 @@
+Deep learning uses multi-layer neural networks for feature extraction. Convolutional networks handle image recognition tasks. Recurrent networks process sequential data well.

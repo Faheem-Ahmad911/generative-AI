@@ -1,0 +1,1 @@
+Search engines use inverted index to find documents quickly. Google and Bing are popular search engines. Keyword search is fundamental to information retrieval systems.

@@ -1,0 +1,1 @@
+Data science combines statistics programming and domain knowledge. Data scientists analyze large datasets to extract useful insights. Python and R are favourite languages.

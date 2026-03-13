@@ -1,0 +1,1 @@
+Boolean retrieval uses binary weights for query terms. A term is either present or absent in a document. AND OR NOT operators are used to combine query terms.
